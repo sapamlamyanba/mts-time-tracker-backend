@@ -19,7 +19,9 @@ const registerController = async (req, res) => {
     req.body.password = hashedPassword;
     const newUser = new User(req.body);
     await newUser.save();
-    res.status(201).send({message: "Successfull Register", success: true});
+    res.status(201).send({  message: "Successful Register",
+    success: true,
+    userId: newUser._id});
   }
   catch (error) {
     console.error(error);
@@ -48,7 +50,7 @@ const loginController = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
-    res.status(200).send({ message: "Login Success", success: true, token });
+    res.status(200).send({ message: "Login Success", success: true, token,userId: user._id  });
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: `Error in Login CTRL ${error.message}` });
@@ -57,7 +59,8 @@ const loginController = async (req, res) => {
 
 const authController = async (req, res) => {
   try {
-    const user = await User.findOne({ _id: req.body.userId });
+    const user = await User.findById({ _id: req.body.userId });
+   
     if (!user) {
       return res.status(200).send({
         message: "user not found",
@@ -66,10 +69,7 @@ const authController = async (req, res) => {
     } else {
       res.status(200).send({
         success: true,
-        data: {
-          username: user.username,
-          email: user.email,
-        },
+        data: user,
       });
     }
   } catch (error) {
@@ -98,6 +98,7 @@ const logoutController = async(req, res) => {
     res.status(500).send({message:`Error in logout CTRL ${error.message}`})
   }
 }
+
 
 module.exports = {
   registerController,

@@ -37,6 +37,6 @@ const timesheetSchema = new mongoose.Schema({
 }, {timestamps:true})
 
 
-const timeSheetModel = mongoose.model("Timesheet", timesheetSchema);
+const timeSheetModel = mongoose.model("MTSTimesheet", timesheetSchema);
 
 module.exports = timeSheetModel
