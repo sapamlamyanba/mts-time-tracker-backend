@@ -1,46 +1,69 @@
 
-const timesheetModel = require('../models/timesheetModels')
+const timesheetModel = require('../models/timesheetModels');
 
 const createTimesheet = async (req, res) => {
   try {
-    const { timesheetEntries } = req.body;
+    const { userId, timesheetEntries } = req.body;
+
+    if (!userId) {
+      console.error('User ID is required');
+      return res.status(400).send({
+        success: false,
+        message: 'User ID is required',
+      });
+    }
+
 
     if (!timesheetEntries || !timesheetEntries.length) {
       console.error('Invalid or undefined value for req.body.timesheetEntries');
-      res.status(400).send({
+      return res.status(400).send({
         success: false,
         message: 'Invalid or undefined value for req.body.timesheetEntries',
       });
-      return;
     }
 
-    const savedTimesheet = new timesheetModel({ ...timesheetEntries[0] });
+    const savedTimesheets = [];
 
-    for (let i = 0; i < timesheetEntries.length; i++) {
-      const timesheet = new timesheetModel({ ...timesheetEntries[i] });
-      timesheet.hours = timesheetEntries[i].hours;
-      console.log(timesheet);
-      await timesheet.save();
-      console.log('successfully saved');
+    for (let entry of timesheetEntries) {
+      const { xyz, ...rest } = entry;
+      for (let hour of xyz) {
+        const timesheetData = { ...rest, userId, hours: hour, status: 'New' };
+        const timesheet = new timesheetModel(timesheetData);
+        await timesheet.save();
+        savedTimesheets.push(timesheet);
+        console.log('Successfully saved');
+      }
     }
 
-    res.status(201).json(savedTimesheet);
+    res.status(201).json(savedTimesheets);
   } catch (error) {
     console.log(error);
     res.status(500).send({
       success: false,
       error,
-      message: "Error WHile Applying",
+      message: 'Error while applying',
     });
   }
 };
+
 const getTimesheets = async (req, res) => {
   try {
-    // Fetch all timesheets from the database
-    const allTimesheets = await timesheetModel.find();
 
-    // Return the fetched timesheets in the response
-    res.status(200).json(allTimesheets);
+    const userTimesheets = await timesheetModel.find({ userId: req.body.userId });
+
+
+    if (!userTimesheets) {
+      return res.status(404).json({
+        success: false,
+        message: "User timesheets not found",
+        data: []
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: "UserTimesheets fetched successfully",
+      data: userTimesheets,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -51,6 +74,66 @@ const getTimesheets = async (req, res) => {
   }
 };
 
+const approveTimesheet = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const timesheet = await timesheetModel.findById(id);
+    if (!timesheet) {
+      return res.status(404).json({ error: 'Timesheet not found' });
+    }
+    timesheet.status = 'Approved';
+    await timesheet.save();
+
+    res.json({ message: 'Timesheet approved successfully', timesheet });
+  } catch (error) {
+    console.error('Error while approving timesheet:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+}
+
+const rejectTimesheet = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const timesheet = await timesheetModel.findById(id);
+    if (!timesheet) {
+      return res.status(404).json({ error: 'Timesheet not found' });
+    }
+    timesheet.status = 'Rejected';
+    await timesheet.save();
+    res.json({ message: 'Timesheet rejected successfully', timesheet });
+  } catch (error) {
+    console.error('Error while rejecting timesheet:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const UpdateStatus = async (req, res) => {
+
+  try {
+    const timesheetId = req.params.id;
+    const { status, hours } = req.body;
+
+    if (!status || !hours) {
+      return res.status(400).json({ success: false, message: 'Status & hours are required' });
+    }
+
+    const timesheet = await timesheetModel.findById(timesheetId);
+    if (!timesheet) {
+      return res.status(404).json({ success: false, message: 'Timesheet not found' });
+    }
+
+    timesheet.status = status;
+    timesheet.hours = hours;
+    await timesheet.save();
+
+    res.status(200).json({ success: true, message: 'Timesheet status updated successfully', timesheet });
+  } catch (error) {
+    console.error('Error while updating timesheet status:', error);
+    res.status(500).json({ success: false, error: error.message, message: 'Error while updating timesheet status' });
+  }
+}
+
+
 module.exports = {
-  createTimesheet, getTimesheets
+  createTimesheet, getTimesheets, approveTimesheet, rejectTimesheet, UpdateStatus
 }

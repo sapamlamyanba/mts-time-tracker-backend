@@ -20,11 +20,12 @@ app.use(express.json())
 
 //routes
 app.use("/api/user", require('./routes/userRoutes'));
-app.use('/api/admin', require('./routes/adminRoutes'))
-app.use('/api/user/', require('./routes/timesheetRoutes'))
+app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/user/', require('./routes/timesheetRoutes'));
+app.use('/api/password-reset', require('./controllers/passwordReset'))
 
 
-const port = process.env.PORT || 8000;
+const port = 8000;
 
 app.listen(port, ()=> {
     console.log(
