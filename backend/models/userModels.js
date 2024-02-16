@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Your password is required"],
   },
+  checkPassword: {
+    type: String,
+  },
   createdAt: {
     type: Date,
     default: new Date(),

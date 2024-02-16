@@ -7,43 +7,39 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 
+
 router.post("/", async (req, res) => {
-    try {
-        console.log('test test');
+    try {      
         
         const schema = Joi.object({ email: Joi.string().email().required() });
         const { error } = schema.validate(req.body);
         if (error) return res.status(400).send(error.details[0].message);
 
         const user = await User.findOne({ email: req.body.email });
-        if (!user)
+        if (!user){
+            console.log("User not found");
             return res.status(400).send("given user email doesn't exist");
-        console.log('user found');
+        }
+        // console.log('user found');
         
-        let token = await Token.findOne({ userId: user._id });
-        if (!token) {
+        let resetToken = await Token.findOne({ userId: user._id });
+        if (!resetToken) {
             const hashedToken = await bcrypt.hash(crypto.randomBytes(32).toString("hex"), 10);
-            const encodedToken = encodeURIComponent(hashedToken);
-            console.log('hashed Token = ', hashedToken);
-            console.log('encoded token = ', encodedToken);
-            
-            token = await new Token({
+            const encodedToken = encodeURIComponent(hashedToken);           
+            resetToken = await new Token({
                 userId: user._id,
                 token: encodedToken ,
             }).save();
         }
 
-        // const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-        //     expiresIn: "1d",
-        //   });
-
-        const link = `http://localhost:8000/api/password-reset/${token.token}`;
-        console.log('checkk Link',`${token.token}`);
-        
+        const link = `http://localhost:8000/api/password-reset/${resetToken.token}`;
+        // console.log('checkk Link',`${resetToken.token}`);        
 
         await sendEmail(user.email, "Password reset", link);
-
-        res.send("password reset link sent to your email account");
+        res.status(500).send({
+            message:"password reset link sent to your email",
+            resetToken:resetToken.token});
+      
     } catch (error) {
         res.send("An error occured");
         console.log(error);
@@ -88,5 +84,7 @@ router.post("/:token", async (req, res) => {
 }
 
 );
+
+
 
 module.exports = router;

@@ -59,7 +59,7 @@ const loginController = async (req, res) => {
 
 const authController = async (req, res) => {
   try {
-    const user = await User.findById({ _id: req.body.userId });
+    const user = await User.findById( req.body.userId );
    
     if (!user) {
       return res.status(200).send({
