@@ -9,11 +9,14 @@ module.exports = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
     // console.log("Received token:", token);
+    if (!token) {
+      throw new Error("JWT token not provided");
+    }
 
-    const decoded = await JWT.verify(token, process.env.JWT_SECRET);
+    const decoded =  JWT.verify(token, process.env.JWT_SECRET);
     // console.log("Decoded token payload:", decoded);
 
-    req.body.userId = decoded.id;
+    req.userId = decoded.id;
     next();
   } catch (error) {
     console.error("Authentication error:", error);
