@@ -9,7 +9,7 @@ router.post("/signup", registerController);
 
 router.post('/signIn', loginController)
 
-router.delete('/logout',authMiddleware, logoutController)
+// router.delete('/logout',authMiddleware, logoutController)
 
 router.post('/getUserData', authMiddleware, authController)
 

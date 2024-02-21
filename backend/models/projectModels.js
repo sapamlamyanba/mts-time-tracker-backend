@@ -5,8 +5,8 @@ const projectSchema = new mongoose.Schema({
  
   projectName: {
     type: String,
-    required: [false, "Project Name is require"],
-    // unique: true,
+    // required: [false, "Project Name is require"],
+    unique: true,
   },
   projectDescription: {
     type: String,
@@ -15,9 +15,9 @@ const projectSchema = new mongoose.Schema({
   task:{
     type:String,
   },
-  userId: {
+  account: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'mtsusers',
+    ref: 'mtsaccounts',
   },
   createdAt: {
     type: Date,
@@ -26,7 +26,7 @@ const projectSchema = new mongoose.Schema({
  
 });
 
-const projectModal = mongoose.model("MTSProject", projectSchema);
+const projectModal = mongoose.model("mtsproject", projectSchema);
 
 
 

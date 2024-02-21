@@ -48,15 +48,16 @@ const createTimesheet = async (req, res) => {
 
 const getTimesheets = async (req, res) => {
   try {
-
-    const userTimesheets = await timesheetModel.find({ userId: req.body.userId });
-
-
-    if (!userTimesheets) {
+    const userId = req.userId  
+ 
+    const userTimesheets = await timesheetModel.find({userId});      
+      // console.log('check',userTimesheets);
+      
+    if (!userTimesheets || userTimesheets.length === 0) {
       return res.status(404).json({
         success: false,
         message: "User timesheets not found",
-        data: []
+      
       });
     }
     res.status(200).json({
