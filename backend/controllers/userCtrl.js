@@ -12,13 +12,17 @@ const jwtSecret = process.env.JWT_SECRET;
 
 
 const registerController = async (req, res) => {
+  
+  // console.log('cheklkj',res.body);
+  
   try{
     const password = req.body.password;
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     req.body.password = hashedPassword;
     const newUser = new User(req.body);
-    await newUser.save();
+  
+      await newUser.save();
     res.status(201).send({  message: "Successful Register",
     success: true,
     userId: newUser._id});
@@ -41,15 +45,20 @@ const loginController = async (req, res) => {
         .status(200)
         .send({ message: "user not found", success: false });
     }
+   
+    
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) {
+      console.log('Invalid password..')
       return res
         .status(200)
         .send({ message: "Invlid EMail or Password", success: false });
     }
+    
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
+   
     res.status(200).send({ message: "Login Success", success: true, token,userId: user._id  });
   } catch (error) {
     console.log(error);
@@ -59,7 +68,7 @@ const loginController = async (req, res) => {
 
 const authController = async (req, res) => {
   try {
-    const user = await User.findById( req.body.userId );
+    const user = await User.findById( req.userId );
    
     if (!user) {
       return res.status(200).send({

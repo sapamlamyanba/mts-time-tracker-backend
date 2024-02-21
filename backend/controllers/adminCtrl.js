@@ -28,6 +28,8 @@ const getAllUsersController = async (req, res) => {
 const getUserController = async (req, res) => {
   try {
     const { userId } = req.params;
+    
+    
 
     if (!userId) {
       console.error('User ID is required');
@@ -35,9 +37,7 @@ const getUserController = async (req, res) => {
         success: false,
         message: 'User ID is required',
       });
-    }
-
-    
+    }    
     const timesheets = await timesheetModel.find({ userId });
 
     res.status(200).json({ success: true, data: timesheets });
@@ -79,14 +79,17 @@ const deleteUserController = async (req, res) => {
 
 const createprojectController = async (req, res) => {
   try {
-    const { projectName, projectDescription, task } = req.body;
-    // const userID = req.userID._id;
+    const { projectName, projectDescription, task,account } = req.body;
+   console.log('check',req.body);
+   
     const createProject = new projectModal({
       projectName,
       projectDescription,
       task,
-      // userID,
-    });
+     account,
+         });
+        //  console.log('create',createProject);
+         
     const savedProject = await createProject.save();
     res.status(201).send({  message: "Successful Create Project",
     success: true,
@@ -101,12 +104,12 @@ const createprojectController = async (req, res) => {
     });
   }
 };
-
 const getProjectController = async(req, res)=> {
   try {
-      const projects = await projectModal.find();
-
-    
+    const {account } = req.body;
+      const projects = await projectModal.find({account});    
+      // console.log('project',projects);
+      
     res.status(200).send({
       success: true,
       projects: projects
@@ -228,6 +231,35 @@ const getTaskController = async(req, res)=> {
   }
 };
 
+const getTaskDetailController = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    if (!taskId) {
+      console.error('Task ID is required');
+      return res.status(400).json({
+        success: false,
+        message: 'Task ID is required',
+      });
+    }
+    
+    const taskDetails = await projectModal.findById(taskId);
+    if (!taskId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Task not found',
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      data: taskDetails,
+    });
+  } catch (error) {
+    console.error('Error fetching project details:', error);
+    res.status(500).json({ success: false, error, message: 'Error fetching project details' });
+  }
+};
+
 const deleteTaskController = async (req, res) => {
   try {
     const { taskId } = req.params;
@@ -259,7 +291,8 @@ module.exports = {
  
   getAllUsersController,getUserController,createprojectController,
   getProjectController, getProjectDetailsController,createtaskController,
-  getTaskController, deleteTaskController,deleteProjectController,deleteUserController
+  getTaskController, deleteTaskController,deleteProjectController,deleteUserController,
+  getTaskDetailController
   
 
 };

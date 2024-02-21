@@ -20,6 +20,10 @@ const userSchema = new mongoose.Schema({
   checkPassword: {
     type: String,
   },
+  account: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'mtsaccounts',
+  },
   createdAt: {
     type: Date,
     default: new Date(),
@@ -28,6 +32,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  isManager:{
+    type:Boolean,
+    default:false
+  }
  
 });
 
